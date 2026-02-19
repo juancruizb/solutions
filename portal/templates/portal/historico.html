@@ -375,6 +375,28 @@
         <hr style="border-color:var(--border); margin:16px 24px;">
 
         <div class="px-4 mb-2"
+            style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">URLs del
+            Proyecto
+        </div>
+        <div class="px-4 mb-3">
+            <a href="http://127.0.0.1:8000/home/" target="_blank"
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
+                <i class="bi bi-globe2"></i> /home/
+            </a>
+            <a href="http://127.0.0.1:8000/historico/" target="_blank"
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
+                <i class="bi bi-journal-code"></i> /historico/
+            </a>
+            <a href="http://127.0.0.1:8000/api/solutions/" target="_blank"
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:var(--text-muted); text-decoration:none;">
+                <i class="bi bi-braces"></i> /api/solutions/ <span
+                    style="font-size:0.7rem; background:rgba(255,193,7,0.15); color:#ffc107; padding:1px 6px; border-radius:10px; margin-left:auto;">pendiente</span>
+            </a>
+        </div>
+
+        <hr style="border-color:var(--border); margin:16px 24px;">
+
+        <div class="px-4 mb-2"
             style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Pendientes
         </div>
         <div class="px-4">
@@ -410,6 +432,47 @@
                 <span class="arch-arrow">→</span>
                 <span class="arch-node" style="border-color: #ffc107;"><i class="bi bi-globe me-2"></i>Portal
                     Público</span>
+            </div>
+
+            <!-- URLs Card -->
+            <div
+                style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-top:20px;">
+                <div
+                    style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); font-weight:700; margin-bottom:12px;">
+                    <i class="bi bi-link-45deg me-1 text-primary"></i> URLs del Proyecto
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+                    <a href="http://127.0.0.1:8000/home/" target="_blank"
+                        style="display:flex; align-items:center; gap:10px; background:rgba(13,110,253,0.08); border:1px solid rgba(13,110,253,0.25); border-radius:8px; padding:12px 14px; text-decoration:none; transition:background 0.2s;"
+                        onmouseover="this.style.background='rgba(13,110,253,0.18)'"
+                        onmouseout="this.style.background='rgba(13,110,253,0.08)'">
+                        <i class="bi bi-globe2 text-primary" style="font-size:1.1rem;"></i>
+                        <div>
+                            <div style="color:#fff; font-weight:600; font-size:0.83rem;">/home/</div>
+                            <div style="color:var(--text-muted); font-size:0.75rem;">Portal de soluciones público</div>
+                        </div>
+                    </a>
+                    <a href="http://127.0.0.1:8000/historico/" target="_blank"
+                        style="display:flex; align-items:center; gap:10px; background:rgba(45,206,137,0.08); border:1px solid rgba(45,206,137,0.25); border-radius:8px; padding:12px 14px; text-decoration:none; transition:background 0.2s;"
+                        onmouseover="this.style.background='rgba(45,206,137,0.18)'"
+                        onmouseout="this.style.background='rgba(45,206,137,0.08)'">
+                        <i class="bi bi-journal-code text-success" style="font-size:1.1rem;"></i>
+                        <div>
+                            <div style="color:#fff; font-weight:600; font-size:0.83rem;">/historico/</div>
+                            <div style="color:var(--text-muted); font-size:0.75rem;">Histórico del proyecto</div>
+                        </div>
+                    </a>
+                    <div
+                        style="display:flex; align-items:center; gap:10px; background:rgba(255,193,7,0.06); border:1px solid rgba(255,193,7,0.2); border-radius:8px; padding:12px 14px; opacity:0.7;">
+                        <i class="bi bi-braces" style="font-size:1.1rem; color:#ffc107;"></i>
+                        <div>
+                            <div style="color:#fff; font-weight:600; font-size:0.83rem;">/api/solutions/ <span
+                                    style="font-size:0.68rem; background:rgba(255,193,7,0.2); color:#ffc107; padding:1px 6px; border-radius:10px;">pendiente</span>
+                            </div>
+                            <div style="color:var(--text-muted); font-size:0.75rem;">API local de soluciones</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
