@@ -1,0 +1,4 @@
+token_store.json
+.env
+__pycache__/
+*.pyc

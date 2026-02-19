@@ -1,0 +1,794 @@
+<!-- https://github.com/juancruizb/solutions.git  -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions Portal - Antigravity</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --bg-light: #f8f9fa;
+            --font-main: 'Inter', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: #f0f2f5;
+            color: #344767;
+            font-size: 0.9rem;
+        }
+
+        /* GOLDEN RULE: Universal Alignment */
+        .main-view-container {
+            padding-top: 35px;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #fff;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            padding-top: 50px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.01);
+        }
+
+        .sidebar-header {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-item {
+            padding: 12px 24px;
+            color: #67748e;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .sidebar-item:hover {
+            background-color: #f8f9fa;
+            color: #344767;
+        }
+
+        .sidebar-item.active {
+            background-color: #eef2f6;
+            border-left-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .sidebar-item i {
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Area */
+        .content-wrapper {
+            margin-left: var(--sidebar-width);
+            padding: 20px 30px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Card & Table Styling */
+        .card-custom {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        .table-custom {
+            margin-bottom: 0;
+        }
+
+        .table-custom thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            color: #8392ab;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 12px 16px;
+        }
+
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f3f5;
+            color: #495057;
+        }
+
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-custom tr:hover td {
+            background-color: #fafbfc;
+        }
+
+        /* Badges */
+        .status-badge {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-published {
+            background-color: #e6f7ef;
+            color: #0f5132;
+        }
+
+        .status-draft {
+            background-color: #fff5f5;
+            color: #c03221;
+        }
+
+        .status-review {
+            background-color: #fff9e6;
+            color: #9a6e02;
+        }
+
+        /* Detail View Styling */
+        .detail-header {
+            background: #fff;
+            padding: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .ibs-block {
+            background: linear-gradient(135deg, #2dce89 0%, #2dcecc 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 3rem;
+            text-align: center;
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 15px -3px rgba(45, 206, 137, 0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hidden Utility */
+        .d-none-custom {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Buttons & Inputs */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+
+        .btn-outline-secondary {
+            border-color: #e2e6ea;
+            color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            color: #344767;
+            border-color: #d1d7dc;
+        }
+
+        .search-input {
+            border: 1px solid #e2e6ea;
+            padding-left: 35px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="%236c757d" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 12px center;
+            background-size: 14px;
+        }
+
+        .search-input:focus {
+            box-shadow: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+        }
+
+        .stat-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 10px;
+            color: #8392ab;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar d-flex flex-column">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="bi bi-box-seam-fill text-primary" style="font-size: 1.5rem;"></i>
+                <span>Antigravity<br><small class="fw-normal text-muted" style="font-size: 0.75rem;">Solutions
+                        Portal</small></span>
+            </div>
+        </div>
+        <div id="topic-list">
+            <!-- Topics will be injected here -->
+            <div class="sidebar-item active" onclick="filterByTopic('all')">
+                <i class="bi bi-grid-fill"></i> Todos los temas
+            </div>
+            <div class="sidebar-item" onclick="filterByTopic('Network')">
+                <i class="bi bi-router"></i> Network
+            </div>
+            <div class="sidebar-item" onclick="filterByTopic('Hardware')">
+                <i class="bi bi-cpu"></i> Hardware
+            </div>
+            <div class="sidebar-item" onclick="filterByTopic('Software')">
+                <i class="bi bi-window-stack"></i> Software
+            </div>
+            <div class="sidebar-item" onclick="filterByTopic('Servers')">
+                <i class="bi bi-hdd-rack"></i> Servidores
+            </div>
+            <div class="sidebar-item" onclick="filterByTopic('Security')">
+                <i class="bi bi-shield-lock"></i> Seguridad
+            </div>
+
+            <div class="mt-4 px-4 text-uppercase text-muted"
+                style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">Administración</div>
+            <div class="sidebar-item mt-2" onclick="alert('Config not implemented')">
+                <i class="bi bi-gear"></i> Configuración
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper main-view-container">
+
+        <!-- VIEW: LIST -->
+        <div id="view-list" class="fade-in">
+
+            <!-- Header List -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 id="page-title" class="mb-1 fw-bold">Base de Conocimiento</h4>
+                    <p class="text-muted mb-0 small">Gestiona y consulta las soluciones técnicas.</p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-white border px-3 active"><i class="bi bi-list"></i></button>
+                    <button class="btn btn-white border px-3"><i class="bi bi-grid"></i></button>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="card-custom p-3 mb-4 d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Nueva solución
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-share me-1"></i> Compartir
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle rounded-pill px-3" type="button"
+                            data-bs-toggle="dropdown">
+                            Acciones
+                        </button>
+                        <ul class="dropdown-menu border-0 shadow">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-check-all me-2"></i>Aprobar
+                                    seleccionados</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-archive me-2"></i>Archivar</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="width: 320px;">
+                    <input type="text" class="form-control form-control-sm search-input rounded-pill py-2"
+                        placeholder="Buscar por título, ID o contenido...">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card-custom overflow-hidden">
+                <table class="table table-custom table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col" width="40" class="text-center ps-4"><input type="checkbox"
+                                    class="form-check-input"></th>
+                            <th scope="col">Soluciones</th>
+                            <th scope="col">Compartido con</th>
+                            <th scope="col">Estado Pub.</th>
+                            <th scope="col">Estado Rev.</th>
+                            <th scope="col" class="text-end pe-4">Interacción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solutions-table-body">
+                        <!-- Rows injected via JS -->
+                    </tbody>
+                </table>
+                <div class="p-3 border-top bg-light text-muted small d-flex justify-content-between align-items-center">
+                    <span>Mostrando <span id="count-display" class="fw-bold text-dark">0</span> resultados</span>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: DETAIL -->
+        <div id="view-detail" class="d-none-custom fade-in">
+            <button class="btn btn-link text-decoration-none mb-4 p-0 fw-bold text-secondary" onclick="uiGoBack()">
+                <i class="bi bi-arrow-left me-1"></i> Volver a la lista
+            </button>
+
+            <div class="detail-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-light text-primary border border-primary-subtle"
+                                id="detail-topic">TOPIC</span>
+                            <span class="text-muted small" id="detail-id">SOL-000</span>
+                        </div>
+                        <h2 class="mb-2 fw-bold text-dark" id="detail-title">Solution Title</h2>
+                        <div class="detail-meta">
+                            <span><i class="bi bi-clock me-1"></i> Actualizado: <span id="detail-date">-</span></span>
+                            <span><i class="bi bi-person me-1"></i> Autor: <span class="fw-medium text-dark">Juan Carlos
+                                    Ruiz</span></span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge bg-success shadow-sm px-3 py-2 rounded-pill" id="detail-badge"><i
+                                class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
+                    </div>
+                </div>
+                <!-- Action Bar inside Detail -->
+                <div class="mt-4 pt-3 border-top d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="bi bi-pencil me-1"></i>
+                        Editar</button>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3"><i
+                            class="bi bi-clock-history me-1"></i> Historial</button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-auto"><i
+                            class="bi bi-trash me-1"></i> Archivar</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="card-custom p-4 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-file-text me-2 text-primary"></i>Descripción y Detalles
+                        </h5>
+
+                        <div id="detail-content" class="text-secondary" style="line-height: 1.7;">
+                            <!-- Dynamic Content -->
+                            <p>Contenido de la solución...</p>
+                        </div>
+
+                        <!-- Dynamic Tables -->
+                        <div class="row mt-5 g-4" id="detail-tables">
+                            <!-- Injected tables -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="ibs-block mb-3">
+                        IBS
+                    </div>
+                    <div class="card-custom p-3 mb-3">
+                        <h6 class="fw-bold mb-3 text-dark small text-uppercase">Estadísticas</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted"><i class="bi bi-hand-thumbs-up me-2"></i>Útil</span>
+                            <span class="fw-bold">12</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted"><i class="bi bi-chat-left me-2"></i>Comentarios</span>
+                            <span class="fw-bold">3</span>
+                        </div>
+                    </div>
+
+                    <div class="card-custom p-3">
+                        <h6 class="fw-bold mb-3 text-dark small text-uppercase">Relacionados</h6>
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-secondary"><i
+                                        class="bi bi-link-45deg me-1"></i>Configuración VPN</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-secondary"><i
+                                        class="bi bi-link-45deg me-1"></i>Políticas de Seguridad</a></li>
+                            <li><a href="#" class="text-decoration-none text-secondary"><i
+                                        class="bi bi-link-45deg me-1"></i>Accesos Remotos</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // EXPANDED MOCK DATA
+        const solutions = [
+            {
+                id: 'SOL-1',
+                title: 'Extensiones Integradas',
+                topic: 'Network',
+                shared: 'Todos',
+                published: true,
+                status: 'Aprobado',
+                likes: 12,
+                comments: 3,
+                updated: '17 Feb, 2026',
+                content: 'Listado oficial de extensiones telefónicas integradas para las sedes principales (Santo Domingo y Santiago). Usar para configuración de rutas de voz.',
+                tables: {
+                    santoDomingo: [
+                        { ext: 1400, name: 'Recepción' },
+                        { ext: 1401, name: 'Edwin Mejía' },
+                        { ext: 1402, name: 'Achile Hernández' },
+                        { ext: 1403, name: 'Sonia Velazquez' },
+                        { ext: 1404, name: 'Manuel Romero' },
+                        { ext: 1405, name: 'Eleazar Perez' },
+                        { ext: 1406, name: 'Jearmanda Ramos' }
+                    ],
+                    santiago: [
+                        { ext: 1500, name: 'Sandra Martínez' },
+                        { ext: 1501, name: 'Carmen Aybar' },
+                        { ext: 1502, name: 'Cristina Fortea' },
+                        { ext: 1503, name: 'Arismonyt Beato' }
+                    ]
+                }
+            },
+            {
+                id: 'SOL-2',
+                title: 'Wireless Integrates Configuration',
+                topic: 'Network',
+                shared: 'Técnicos',
+                published: true,
+                status: 'Aprobado',
+                likes: 8,
+                comments: 1,
+                updated: '10 Feb, 2026',
+                content: 'Parámetros de configuración para la red unificada "Corp-Wifi". Incluye segmentación de VLANs 10 y 20 para invitados y corporativos.',
+                tables: null
+            },
+            {
+                id: 'SOL-3',
+                title: 'Master Key Routers Edge',
+                topic: 'Security',
+                shared: 'Admins',
+                published: false,
+                status: 'Borrador',
+                likes: 0,
+                comments: 0,
+                updated: '20 Ene, 2026',
+                content: 'Procedimiento seguro de recuperación de claves maestras para routers de borde Cisco ASR. **Confidencial**.',
+                tables: null
+            },
+            {
+                id: 'SOL-4',
+                title: 'MFA ServiceDesk Integration',
+                topic: 'Software',
+                shared: 'Todos',
+                published: true,
+                status: 'Aprobado',
+                likes: 15,
+                comments: 5,
+                updated: '15 Ene, 2026',
+                content: 'Guía para vincular Microsoft Authenticator con la cuenta de ServiceDesk Plus.',
+                tables: null
+            },
+            {
+                id: 'SOL-5',
+                title: 'Windows Server Reactivation Guide',
+                topic: 'Servers',
+                shared: 'Soporte L2',
+                published: true,
+                status: 'Revisión',
+                likes: 2,
+                comments: 0,
+                updated: '10 Ene, 2026',
+                content: 'Pasos para reactivar licencias de volumen (KMS) en servidores Windows 2019/2022 tras caída de host.',
+                tables: null
+            },
+            {
+                id: 'SOL-6',
+                title: 'GrandStream VoIP Provisioning',
+                topic: 'Hardware',
+                shared: 'Técnicos',
+                published: true,
+                status: 'Aprobado',
+                likes: 5,
+                comments: 2,
+                updated: '05 Ene, 2026',
+                content: 'Plantilla XML para aprovisionamiento automático de teléfonos GrandStream GXP2170.',
+                tables: null
+            },
+            {
+                id: 'SOL-7',
+                title: 'VMWare ESXi Upgrade Path',
+                topic: 'Servers',
+                shared: 'Infraestructura',
+                published: false,
+                status: 'Borrador',
+                likes: 0,
+                comments: 1,
+                updated: '03 Ene, 2026',
+                content: 'Ruta de actualización segura de ESXi 7.0 a 8.0. Verificar compatibilidad HCL antes de proceder.',
+                tables: null
+            },
+            {
+                id: 'SOL-8',
+                title: 'VPN Client Troubleshooting',
+                topic: 'Software',
+                shared: 'Helpdesk',
+                published: true,
+                status: 'Aprobado',
+                likes: 24,
+                comments: 8,
+                updated: '28 Dic, 2025',
+                content: 'Solución a errores comunes (Error 619, 800) en el cliente VPN FortiClient.',
+                tables: null
+            },
+            {
+                id: 'SOL-9',
+                title: 'Printer Spooler Reset Script',
+                topic: 'Software',
+                shared: 'Helpdesk',
+                published: true,
+                status: 'Aprobado',
+                likes: 45,
+                comments: 12,
+                updated: '15 Dic, 2025',
+                content: 'Script PowerShell para reiniciar el servicio de cola de impresión en equipos remotos.',
+                tables: null
+            },
+            {
+                id: 'SOL-10',
+                title: 'Firewall Policy Naming Convention',
+                topic: 'Security',
+                shared: 'Seguridad',
+                published: false,
+                status: 'Obsoleto',
+                likes: 1,
+                comments: 0,
+                updated: '10 Nov, 2025',
+                content: 'Convención de nombres antigua. Ver documento v2.0 para la norma actual.',
+                tables: null
+            }
+        ];
+
+        // RENDER LIST
+        function renderSolutions() {
+            const tbody = document.getElementById('solutions-table-body');
+            tbody.innerHTML = '';
+
+            solutions.forEach(sol => {
+                const badgeClass = sol.published ? 'status-published' : 'status-draft';
+                const badgeText = sol.published ? '<i class="bi bi-check2"></i> Publicado' : '<i class="bi bi-pause-circle"></i> No pub.';
+
+                // Status Review Badge
+                let statusClass = 'bg-light text-dark';
+                if (sol.status === 'Aprobado') statusClass = 'bg-success-subtle text-success';
+                if (sol.status === 'Borrador') statusClass = 'bg-secondary-subtle text-secondary';
+                if (sol.status === 'Revisión') statusClass = 'bg-warning-subtle text-warning-emphasis';
+
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+                tr.onclick = (e) => {
+                    if (e.target.type !== 'checkbox' && !e.target.closest('a')) {
+                        openDetail(sol.id);
+                    }
+                };
+
+                tr.innerHTML = `
+                    <td class="text-center ps-4"><input type="checkbox" class="form-check-input"></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">${sol.title}</div>
+                                <div class="small text-muted d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-secondary border">${sol.topic}</span>
+                                    <span>${sol.id}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="small text-muted"><i class="bi bi-people me-1"></i>${sol.shared}</td>
+                    <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                    <td><span class="badge ${statusClass} rounded-pill border border-0 px-2 py-1 small fw-normal">${sol.status}</span></td>
+                    <td class="text-end pe-4">
+                        <span class="stat-item"><i class="bi bi-hand-thumbs-up-fill text-primary"></i> ${sol.likes}</span>
+                        <span class="stat-item ms-3"><i class="bi bi-chat-dots-fill text-info"></i> ${sol.comments}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('count-display').innerText = solutions.length;
+        }
+
+        // NAVIGATION LOGIC (SPA)
+        function openDetail(id, pushState = true) {
+            const sol = solutions.find(s => s.id === id);
+            if (!sol) return;
+
+            // Populate Detail
+            document.getElementById('detail-id').innerText = sol.id;
+            document.getElementById('detail-title').innerText = sol.title;
+            document.getElementById('detail-topic').innerText = sol.topic;
+            document.getElementById('detail-date').innerText = sol.updated;
+            document.getElementById('detail-content').innerHTML = sol.content ? `<p class="fs-6">${sol.content}</p>` : '';
+
+            // Render specific tables
+            const tableContainer = document.getElementById('detail-tables');
+            tableContainer.innerHTML = '';
+
+            if (sol.tables) {
+                // Santo Domingo
+                if (sol.tables.santoDomingo) {
+                    let html = `<div class="col-md-6">
+                        <div class="card-custom h-100 overflow-hidden border-0 shadow-sm">
+                            <div class="card-header bg-dark text-white text-center fw-bold py-3">
+                                <i class="bi bi-building me-2"></i>SANTO DOMINGO
+                            </div>
+                            <ul class="list-group list-group-flush">`;
+                    sol.tables.santoDomingo.forEach((item, index) => {
+                        const bgClass = index % 2 === 0 ? 'bg-light' : 'bg-white';
+                        html += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 ${bgClass}">
+                            <span class="fw-bold text-success font-monospace fs-6">${item.ext}</span>
+                            <span class="text-dark">${item.name}</span>
+                        </li>`;
+                    });
+                    html += `</ul></div></div>`;
+                    tableContainer.innerHTML += html;
+                }
+
+                // Santiago
+                if (sol.tables.santiago) {
+                    let html = `<div class="col-md-6">
+                        <div class="card-custom h-100 overflow-hidden border-0 shadow-sm">
+                            <div class="card-header bg-dark text-white text-center fw-bold py-3">
+                                <i class="bi bi-building me-2"></i>SANTIAGO
+                            </div>
+                            <ul class="list-group list-group-flush">`;
+                    sol.tables.santiago.forEach((item, index) => {
+                        const bgClass = index % 2 === 0 ? 'bg-light' : 'bg-white';
+                        html += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 ${bgClass}">
+                            <span class="fw-bold text-danger font-monospace fs-6">${item.ext}</span>
+                            <span class="text-dark">${item.name}</span>
+                        </li>`;
+                    });
+                    html += `</ul></div></div>`;
+                    tableContainer.innerHTML += html;
+                }
+            }
+
+            // Switch Views with Animation
+            document.getElementById('view-list').classList.add('d-none-custom');
+            document.getElementById('view-detail').classList.remove('d-none-custom');
+            window.scrollTo(0, 0);
+
+            // History API
+            if (pushState) {
+                const url = new URL(window.location);
+                url.searchParams.set('solution', id);
+                history.pushState({ view: 'detail', id: id }, '', url);
+            }
+        }
+
+        function closeDetail() {
+            document.getElementById('view-detail').classList.add('d-none-custom');
+            document.getElementById('view-list').classList.remove('d-none-custom');
+        }
+
+        function uiGoBack() {
+            if (history.state && history.state.view === 'detail') {
+                history.back();
+            } else {
+                closeDetail();
+                const url = new URL(window.location);
+                url.searchParams.delete('solution');
+                history.replaceState(null, '', url);
+            }
+        }
+
+        // Handle Browser Back Button
+        window.onpopstate = function (event) {
+            if (event.state && event.state.view === 'detail') {
+                openDetail(event.state.id, false);
+            } else {
+                closeDetail();
+            }
+        };
+
+        function filterByTopic(topic) {
+            const items = document.querySelectorAll('.sidebar-item');
+            items.forEach(el => el.classList.remove('active'));
+            if (event && event.target) {
+                // Handling click on icon or text
+                const target = event.target.closest('.sidebar-item');
+                if (target) target.classList.add('active');
+            }
+            console.log("Filtering by: " + topic);
+        }
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSolutions();
+            // Check URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const solutionId = urlParams.get('solution');
+            if (solutionId) {
+                openDetail(solutionId, false);
+            }
+        });
+    </script>
+</body>
+
+</html>
