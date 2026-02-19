@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tópicos – Antigravity Solutions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sidebar-width: 220px;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: #f0f2f5;
+            color: #344767;
+            font-size: 0.9rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            padding: 28px 0 20px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 20px 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-brand .badge-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0d6efd, #6ea8fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 20px;
+            color: #67748e;
+            font-size: 0.85rem;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.18s;
+        }
+
+        .nav-link-item:hover {
+            background: #f5f7fa;
+            color: #344767;
+        }
+
+        .nav-link-item.active {
+            color: #0d6efd;
+            border-left-color: #0d6efd;
+            background: #eef4ff;
+            font-weight: 600;
+        }
+
+        .nav-section {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+            font-weight: 700;
+            padding: 18px 20px 6px;
+        }
+
+        /* Main */
+        .content-wrapper {
+            margin-left: var(--sidebar-width);
+            padding: 36px 36px 60px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.07);
+            border-radius: 14px;
+            padding: 28px 24px 22px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .topic-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .topic-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .topic-count {
+            font-size: 0.82rem;
+            color: #8392ab;
+            margin-top: auto;
+            padding-top: 12px;
+        }
+
+        .topic-count span {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #344767;
+            display: block;
+            line-height: 1;
+        }
+
+        /* Loading / Error */
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #8392ab;
+        }
+
+        /* Search bar */
+        .search-wrap {
+            position: relative;
+            max-width: 340px;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+        .search-wrap input {
+            padding-left: 36px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            background: #fff;
+            font-size: 0.875rem;
+        }
+
+        .search-wrap input:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, .15);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="badge-logo"><i class="bi bi-box"></i></div>
+            <div>
+                <div style="font-size:0.9rem; font-weight:700;">Antigravity</div>
+                <div style="font-size:0.72rem; color:#8392ab; font-weight:400;">Solutions Portal</div>
+            </div>
+        </div>
+
+        <div class="nav-section">Navegación</div>
+        <a href="/home/" class="nav-link-item">
+            <i class="bi bi-grid-1x2"></i> Soluciones
+        </a>
+        <a href="/topics/" class="nav-link-item active">
+            <i class="bi bi-tags"></i> Tópicos
+        </a>
+        <a href="/historico/" class="nav-link-item">
+            <i class="bi bi-journal-code"></i> Histórico
+        </a>
+
+        <div class="nav-section">API</div>
+        <a href="/api/solutions/" class="nav-link-item" target="_blank">
+            <i class="bi bi-braces"></i> /api/solutions/
+        </a>
+        <a href="/api/topics/" class="nav-link-item" target="_blank">
+            <i class="bi bi-braces"></i> /api/topics/
+        </a>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="content-wrapper">
+
+        <div class="page-header d-flex align-items-start justify-content-between flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-tags me-2 text-primary"></i>Tópicos</h1>
+                <p class="text-muted mb-0">Categorías de soluciones disponibles en ServiceDesk Plus Cloud.</p>
+            </div>
+            <div class="search-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" id="search-input" class="form-control" placeholder="Filtrar tópicos..."
+                    oninput="filterTopics()">
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="d-flex gap-4 mb-4">
+            <div class="d-flex align-items-center gap-2 text-muted" style="font-size:0.85rem;">
+                <i class="bi bi-folder2-open text-primary"></i>
+                <span id="topics-count">–</span> tópicos
+            </div>
+            <div class="d-flex align-items-center gap-2 text-muted" style="font-size:0.85rem;">
+                <i class="bi bi-file-earmark-text text-success"></i>
+                <span id="solutions-total">–</span> soluciones en total
+            </div>
+        </div>
+
+        <!-- Cards grid -->
+        <div id="topics-grid" class="row g-3">
+            <div class="col-12">
+                <div class="loading-state">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <p class="text-muted">Cargando tópicos desde SDP Cloud...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ── Icon mapping SDP icon_key → Bootstrap icon ────────────────
+        const ICON_MAP = {
+            'solution_Hardware': { icon: 'bi-cpu', bg: '#e8f0fe', color: '#1a73e8' },
+            'solution_Software': { icon: 'bi-window-stack', bg: '#e6f4ea', color: '#137333' },
+            'solution_Internet': { icon: 'bi-globe2', bg: '#fce8e6', color: '#c5221f' },
+            'solution_Printers': { icon: 'bi-printer', bg: '#fff3e0', color: '#e65100' },
+            'solution_Routers': { icon: 'bi-router', bg: '#ede7f6', color: '#512da8' },
+            'solution_SSO': { icon: 'bi-shield-check', bg: '#e0f7fa', color: '#006064' },
+            'solution_Safety': { icon: 'bi-shield-lock', bg: '#fce4ec', color: '#880e4f' },
+            'solution_General': { icon: 'bi-folder2-open', bg: '#f3f4f6', color: '#5f6368' },
+        };
+
+        function getIconStyle(icon_key) {
+            return ICON_MAP[icon_key] || ICON_MAP['solution_General'];
+        }
+
+        let allTopics = [];
+
+        // ── Fetch topics ─────────────────────────────────────────────
+        async function loadTopics() {
+            try {
+                const res = await fetch('/api/topics/');
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                allTopics = data.topics;
+
+                // Stats
+                const totalSols = allTopics.reduce((s, t) => s + t.count, 0);
+                document.getElementById('topics-count').textContent = data.total;
+                document.getElementById('solutions-total').textContent = totalSols;
+
+                renderTopics(allTopics);
+
+            } catch (err) {
+                document.getElementById('topics-grid').innerHTML = `
+                    <div class="col-12">
+                        <div class="loading-state text-danger">
+                            <div class="text-center">
+                                <i class="bi bi-exclamation-triangle fs-2 mb-2 d-block"></i>
+                                Error: ${err.message}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        // ── Render cards ─────────────────────────────────────────────
+        function renderTopics(topics) {
+            const grid = document.getElementById('topics-grid');
+            grid.innerHTML = '';
+
+            if (topics.length === 0) {
+                grid.innerHTML = `<div class="col-12 text-center text-muted py-5">
+                    <i class="bi bi-folder-x fs-2 d-block mb-2"></i>
+                    No se encontraron tópicos.
+                </div>`;
+                return;
+            }
+
+            topics.forEach(topic => {
+                const style = getIconStyle(topic.icon_key);
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+                col.dataset.name = topic.name.toLowerCase();
+
+                col.innerHTML = `
+                    <a href="/home/?topic=${encodeURIComponent(topic.name)}"
+                       class="topic-card d-block text-decoration-none">
+                        <div class="topic-icon" style="background:${style.bg}; color:${style.color};">
+                            <i class="bi ${style.icon}"></i>
+                        </div>
+                        <div class="topic-name">${topic.name}</div>
+                        <div class="topic-count">
+                            <span>${topic.count}</span>
+                            solución${topic.count !== 1 ? 'es' : ''}
+                        </div>
+                    </a>`;
+                grid.appendChild(col);
+            });
+        }
+
+        // ── Filter ───────────────────────────────────────────────────
+        function filterTopics() {
+            const q = document.getElementById('search-input').value.toLowerCase().trim();
+            const filtered = q
+                ? allTopics.filter(t => t.name.toLowerCase().includes(q))
+                : allTopics;
+            renderTopics(filtered);
+        }
+
+        // ── Init ─────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', loadTopics);
+    </script>
+</body>
+
+</html>

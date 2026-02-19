@@ -16,6 +16,10 @@ def historico(request):
     return render(request, 'portal/historico.html')
 
 
+def topics(request):
+    return render(request, 'portal/topics.html')
+
+
 def api_solutions(request):
     """
     GET /api/solutions/
