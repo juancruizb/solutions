@@ -89,3 +89,29 @@ class SDPSolutions:
         response.raise_for_status()
         return response.json()
 
+    @staticmethod
+    def get_topics(access_token: str) -> list:
+        """
+        Derives unique topics from all solutions.
+        Returns a sorted list of dicts:
+          [{"id": "...", "name": "...", "icon_key": "...", "count": N}, ...]
+        """
+        all_solutions = SDPSolutions.get_all_paginated(access_token)
+
+        seen = {}  # topic_id -> dict
+        for s in all_solutions:
+            topic = s.get("topic", {})
+            if not topic:
+                continue
+            tid = topic.get("id", "")
+            if tid not in seen:
+                seen[tid] = {
+                    "id":       tid,
+                    "name":     topic.get("name", "General"),
+                    "icon_key": topic.get("icon_key", ""),
+                    "count":    0,
+                }
+            seen[tid]["count"] += 1
+
+        return sorted(seen.values(), key=lambda t: t["name"])
+

@@ -54,3 +54,25 @@ def api_solutions(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e), "solutions": []}, status=500)
+
+
+def api_topics(request):
+    """
+    GET /api/topics/
+    Returns all unique topics derived from existing solutions,
+    sorted alphabetically with a solution count per topic.
+    """
+    try:
+        from resources.token.sdp_auth import SDPAuth
+        from resources.solutions.sdp_solutions import SDPSolutions
+
+        token = SDPAuth.get_access_token(
+            client_id=os.getenv("SDP_CLIENT_ID"),
+            client_secret=os.getenv("SDP_CLIENT_SECRET"),
+        )
+
+        topics = SDPSolutions.get_topics(token)
+        return JsonResponse({"topics": topics, "total": len(topics)})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e), "topics": []}, status=500)
