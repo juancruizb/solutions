@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico del Proyecto KB</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --success: #2dce89;
+            --warning: #ffc107;
+            --danger: #e74c3c;
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #22263a;
+            --border: rgba(255, 255, 255, 0.07);
+            --text: #e2e8f0;
+            --text-muted: #8892ab;
+            --font: 'Inter', sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 24px 0;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 0 24px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-brand h6 {
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .sidebar-brand small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .timeline-nav-item {
+            padding: 10px 24px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .timeline-nav-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+        }
+
+        .timeline-nav-item.active {
+            border-left-color: var(--primary);
+            color: #fff;
+            background: rgba(13, 110, 253, 0.08);
+        }
+
+        .timeline-nav-item .time-badge {
+            font-size: 0.7rem;
+            font-family: var(--mono);
+            color: var(--primary);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Main content */
+        .content-wrapper {
+            margin-left: 280px;
+            padding: 40px;
+            max-width: 1000px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Timeline entry card */
+        .entry-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .entry-header {
+            padding: 16px 24px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .entry-timestamp {
+            font-family: var(--mono);
+            font-size: 0.78rem;
+            color: var(--primary);
+            background: rgba(13, 110, 253, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .entry-title {
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .entry-body {
+            padding: 24px;
+        }
+
+        /* Tables */
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 12px 0;
+        }
+
+        .table-dark-custom thead th {
+            background: var(--surface2);
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+        }
+
+        .table-dark-custom td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: top;
+        }
+
+        .table-dark-custom tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            color: #c9d1d9;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .code-block .kw {
+            color: #ff7b72;
+        }
+
+        .code-block .fn {
+            color: #d2a8ff;
+        }
+
+        .code-block .str {
+            color: #a5d6ff;
+        }
+
+        .code-block .cm {
+            color: #8b949e;
+        }
+
+        /* Status chips */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .chip-success {
+            background: rgba(45, 206, 137, 0.15);
+            color: #2dce89;
+        }
+
+        .chip-primary {
+            background: rgba(13, 110, 253, 0.15);
+            color: #6ea8fe;
+        }
+
+        .chip-warning {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+
+        .chip-pending {
+            background: rgba(136, 148, 171, 0.15);
+            color: #8892ab;
+        }
+
+        /* Task list */
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-done {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        /* Architecture diagram */
+        .arch-diagram {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+        }
+
+        .arch-node {
+            display: inline-block;
+            background: var(--surface2);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .arch-arrow {
+            color: var(--primary);
+            margin: 0 12px;
+            font-size: 1.2rem;
+        }
+
+        /* File tree */
+        .file-tree {
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            line-height: 1.8;
+        }
+
+        .file-dir {
+            color: #79c0ff;
+        }
+
+        .file-py {
+            color: #2dce89;
+        }
+
+        .file-json {
+            color: #ffa657;
+        }
+
+        .file-md {
+            color: #d2a8ff;
+        }
+
+        .file-env {
+            color: #f85149;
+        }
+
+        hr.entry-divider {
+            border-color: var(--border);
+            margin: 20px 0;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-journal-code text-primary" style="font-size:1.4rem;"></i>
+                <div>
+                    <h6>KB Project</h6>
+                    <small>Histórico de Desarrollo</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 mb-2"
+            style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Entradas
+        </div>
+
+        <div class="timeline-nav-item active" onclick="goToEntry('e1', this)">
+            <span class="time-badge">2026-02-19 16:08</span>
+            Push rama 20260219
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e2', this)">
+            <span class="time-badge">2026-02-19 16:05</span>
+            SDP Solutions API
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e3', this)">
+            <span class="time-badge">2026-02-19 15:52</span>
+            Push inicial GitHub
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e4', this)">
+            <span class="time-badge">2026-02-19 15:17</span>
+            Credenciales OAuth
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e5', this)">
+            <span class="time-badge">2026-02-19 13:49</span>
+            Estructura resources/
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e6', this)">
+            <span class="time-badge">2026-02-19 13:42</span>
+            Configuración Django
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e7', this)">
+            <span class="time-badge">2026-02-19 13:32</span>
+            Instalación Django
+        </div>
+
+        <hr style="border-color:var(--border); margin:16px 24px;">
+
+        <div class="px-4 mb-2"
+            style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Pendientes
+        </div>
+        <div class="px-4">
+            <div class="task-item">
+                <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
+                <span style="font-size:0.82rem;">Endpoint /api/solutions/</span>
+            </div>
+            <div class="task-item">
+                <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
+                <span style="font-size:0.82rem;">Conectar frontend JS</span>
+            </div>
+            <div class="task-item">
+                <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
+                <span style="font-size:0.82rem;">Filtro soluciones públicas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+
+        <div class="page-header">
+            <h3 class="fw-bold text-white mb-1"><i class="bi bi-journal-code text-primary me-2"></i>Histórico del
+                Proyecto KB</h3>
+            <p style="color:var(--text-muted);">Portal público de base de conocimiento. Django + ServiceDesk Plus Cloud
+                API.</p>
+
+            <div class="arch-diagram mt-4">
+                <span class="arch-node"><i class="bi bi-cloud me-2"></i>SDP Cloud API</span>
+                <span class="arch-arrow">→</span>
+                <span class="arch-node" style="border-color: #2dce89;"><i class="bi bi-server me-2"></i>Django
+                    (kb)</span>
+                <span class="arch-arrow">→</span>
+                <span class="arch-node" style="border-color: #ffc107;"><i class="bi bi-globe me-2"></i>Portal
+                    Público</span>
+            </div>
+        </div>
+
+        <!-- Entry 1 -->
+        <div class="entry-card" id="e1">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 16:08</span>
+                <h6 class="entry-title"><i class="bi bi-git me-2 text-success"></i>Push a rama <code>20260219</code>
+                </h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <div class="section-label">Detalles del commit</div>
+                <div class="code-block">
+                    <span class="cm"># Rama creada desde main</span><br>
+                    git checkout -b 20260219<br>
+                    git commit -m <span class="str">"feat: SDP Solutions API client, OAuth token manager, resources
+                        structure"</span><br>
+                    git push -u origin 20260219
+                </div>
+                <div class="section-label mt-3">Archivos incluidos</div>
+                <div class="file-tree">
+                    <span class="file-dir">resources/solutions/</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── __init__.py</span><br>
+                    &nbsp;&nbsp;<span class="file-py">└── sdp_solutions.py</span><br>
+                    <span class="file-md">resources/historico.md</span> (actualizado)
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 2 -->
+        <div class="entry-card" id="e2">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 16:05</span>
+                <h6 class="entry-title"><i class="bi bi-plug me-2 text-primary"></i>Implementación OAuth + SDP Solutions
+                    API</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+
+                <div class="section-label">OAuth Manager — <code>resources/token/sdp_auth.py</code></div>
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Método</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>get_access_token(client_id, secret)</code></td>
+                            <td>Punto de entrada. Devuelve token válido y refresca si expiró</td>
+                        </tr>
+                        <tr>
+                            <td><code>refresh_access_token(...)</code></td>
+                            <td>Llama a Zoho OAuth y obtiene nuevo <code>access_token</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>save_tokens(data)</code></td>
+                            <td>Persiste tokens en <code>token_store.json</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>load_tokens()</code></td>
+                            <td>Lee tokens almacenados localmente</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr class="entry-divider">
+
+                <div class="section-label">SDP API Client — <code>resources/solutions/sdp_solutions.py</code></div>
+                <p style="color:var(--text-muted); font-size:0.83rem;">Replica exacta de los calls configurados en
+                    Postman.</p>
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Método</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>get_all(token, start_index=0, row_count=1000)</code></td>
+                            <td>Un lote de soluciones con offset</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_all_paginated(token)</code></td>
+                            <td>Pagina automáticamente y retorna TODAS las soluciones</td>
+                        </tr>
+                        <tr>
+                            <td><code>get_by_id(token, solution_id)</code></td>
+                            <td>Detalle de una solución específica</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr class="entry-divider">
+
+                <div class="section-label">Headers (idénticos a Postman)</div>
+                <div class="code-block">
+                    Authorization: Zoho-oauthtoken {token}<br>
+                    Accept: application/vnd.manageengine.sdp.v3+json<br>
+                    Content-Type: application/x-www-form-urlencoded
+                </div>
+
+                <div class="section-label mt-3">Paginación</div>
+                <div class="code-block">
+                    <span class="cm"># input_data enviado como query param</span><br>
+                    {<br>
+                    &nbsp;&nbsp;<span class="str">"list_info"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"row_count"</span>: <span class="str">"1000"</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"start_index"</span>: <span
+                        class="str">"0"</span>,&nbsp;&nbsp;&nbsp;<span class="cm">← primeras 1000</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"sort_field"</span>: <span
+                        class="str">"created_time"</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"sort_order"</span>: <span class="str">"desc"</span><br>
+                    &nbsp;&nbsp;}<br>
+                    }
+                </div>
+
+                <div class="section-label mt-3">Prueba Exitosa</div>
+                <div class="code-block" style="color: #2dce89;">
+                    ✅ SUCCESS - 10 soluciones retornadas<br>
+                    Primera: OpManager reset admin password (SOL-21)
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 3 -->
+        <div class="entry-card" id="e3">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 15:52</span>
+                <h6 class="entry-title"><i class="bi bi-github me-2"></i>Push inicial a GitHub</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <div class="code-block">
+                    Repositorio: <span class="str">https://github.com/juancruizb/solutions.git</span><br>
+                    Rama: <span class="kw">main</span><br>
+                    22 archivos — 1,157 inserciones
+                </div>
+                <div class="section-label mt-3">Protegidos (no subidos)</div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="chip chip-warning"><i class="bi bi-shield-lock"></i> .env</span>
+                    <span class="chip chip-warning"><i class="bi bi-shield-lock"></i> token_store.json</span>
+                    <span class="chip chip-warning"><i class="bi bi-shield-lock"></i> __pycache__/</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 4 -->
+        <div class="entry-card" id="e4">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 15:17</span>
+                <h6 class="entry-title"><i class="bi bi-key me-2 text-warning"></i>Configuración de Credenciales OAuth
+                </h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SDP_CLIENT_ID</code></td>
+                            <td>Client ID de la app Zoho/SDP Cloud</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDP_CLIENT_SECRET</code></td>
+                            <td>Client Secret de la app Zoho</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDP_REFRESH_TOKEN</code></td>
+                            <td>Token de larga duración para refrescar</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDP_ZOHO_DOMAIN</code></td>
+                            <td>Dominio Zoho (<code>zoho.com</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><code>SDP_BASE_URL</code></td>
+                            <td>URL base de la instancia SDP Cloud</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="section-label mt-3">Dependencias instaladas</div>
+                <div class="code-block">
+                    pip install <span class="str">python-dotenv</span> <span class="str">requests</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 5 -->
+        <div class="entry-card" id="e5">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 13:49</span>
+                <h6 class="entry-title"><i class="bi bi-folder2-open me-2 text-primary"></i>Estructura
+                    <code>resources/</code>
+                </h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <div class="file-tree">
+                    <span class="file-dir">resources/</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── __init__.py</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── utils.py</span><br>
+                    &nbsp;&nbsp;<span class="file-dir">├── token/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">│&nbsp;&nbsp;├── __init__.py</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">│&nbsp;&nbsp;├── sdp_auth.py</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-json">│&nbsp;&nbsp;└── token_store.json</span> <span
+                        style="color:var(--text-muted);">(gitignored)</span><br>
+                    &nbsp;&nbsp;<span class="file-dir">└── solutions/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── __init__.py</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">└── sdp_solutions.py</span>
+                </div>
+                <p class="mt-3" style="color:var(--text-muted); font-size:0.83rem;">
+                    Patrón definido: clases con <code>@staticmethod</code> para todas las funciones. Cada dominio
+                    funcional tiene su propio subdirectorio.
+                </p>
+            </div>
+        </div>
+
+        <!-- Entry 6 -->
+        <div class="entry-card" id="e6">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 13:42</span>
+                <h6 class="entry-title"><i class="bi bi-gear me-2"></i>Configuración App Django <code>portal</code></h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Archivo</th>
+                            <th>Cambio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>portal/views.py</code></td>
+                            <td>Vista <code>home</code> → sirve <code>solutionsportal.html</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>portal/urls.py</code></td>
+                            <td>URL <code>/home/</code> mapeada a <code>home</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>kb/settings.py</code></td>
+                            <td><code>'portal'</code> agregado a <code>INSTALLED_APPS</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>kb/urls.py</code></td>
+                            <td>Incluye <code>portal.urls</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="code-block mt-3" style="color:#2dce89;">
+                    ✅ Servidor corriendo en http://127.0.0.1:8000/home/
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 7 -->
+        <div class="entry-card" id="e7">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 13:32</span>
+                <h6 class="entry-title"><i class="bi bi-box-seam me-2"></i>Instalación y Setup Django</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <div class="code-block">
+                    <span class="cm"># 1. Entorno virtual</span><br>
+                    python3 -m venv venv && source venv/bin/activate<br><br>
+                    <span class="cm"># 2. Instalación</span><br>
+                    pip install django<br><br>
+                    <span class="cm"># 3. Proyecto (Opción B - carpeta separada)</span><br>
+                    django-admin startproject <span class="str">kb</span><br><br>
+                    <span class="cm"># 4. Migraciones</span><br>
+                    python manage.py migrate
+                </div>
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <span class="chip chip-primary"><i class="bi bi-box"></i> Django 6.0.2</span>
+                    <span class="chip chip-primary"><i class="bi bi-cpu"></i> Python venv</span>
+                    <span class="chip chip-success"><i class="bi bi-database-check"></i> SQLite</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center py-4" style="color:var(--text-muted); font-size:0.8rem;">
+            <i class="bi bi-clock me-1"></i>Última actualización: 2026-02-19 16:11 · Proyecto KB - Solutions Portal
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goToEntry(id, el) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.querySelectorAll('.timeline-nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Highlight active nav on scroll
+        const entries = document.querySelectorAll('.entry-card');
+        const navItems = document.querySelectorAll('.timeline-nav-item');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            entries.forEach(entry => {
+                if (entry.getBoundingClientRect().top <= 120) {
+                    current = entry.id;
+                }
+            });
+            navItems.forEach((item, i) => {
+                item.classList.toggle('active', `e${i + 1}` === current);
+            });
+        });
+    </script>
+</body>
+
+</html>

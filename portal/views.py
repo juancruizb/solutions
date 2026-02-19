@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def home(request):
     return render(request, 'portal/solutionsportal.html')
+
+def historico(request):
+    return render(request, 'portal/historico.html')
