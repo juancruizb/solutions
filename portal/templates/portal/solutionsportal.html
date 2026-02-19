@@ -470,170 +470,60 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // EXPANDED MOCK DATA
-        const solutions = [
-            {
-                id: 'SOL-1',
-                title: 'Extensiones Integradas',
-                topic: 'Network',
-                shared: 'Todos',
-                published: true,
-                status: 'Aprobado',
-                likes: 12,
-                comments: 3,
-                updated: '17 Feb, 2026',
-                content: 'Listado oficial de extensiones telefónicas integradas para las sedes principales (Santo Domingo y Santiago). Usar para configuración de rutas de voz.',
-                tables: {
-                    santoDomingo: [
-                        { ext: 1400, name: 'Recepción' },
-                        { ext: 1401, name: 'Edwin Mejía' },
-                        { ext: 1402, name: 'Achile Hernández' },
-                        { ext: 1403, name: 'Sonia Velazquez' },
-                        { ext: 1404, name: 'Manuel Romero' },
-                        { ext: 1405, name: 'Eleazar Perez' },
-                        { ext: 1406, name: 'Jearmanda Ramos' }
-                    ],
-                    santiago: [
-                        { ext: 1500, name: 'Sandra Martínez' },
-                        { ext: 1501, name: 'Carmen Aybar' },
-                        { ext: 1502, name: 'Cristina Fortea' },
-                        { ext: 1503, name: 'Arismonyt Beato' }
-                    ]
-                }
-            },
-            {
-                id: 'SOL-2',
-                title: 'Wireless Integrates Configuration',
-                topic: 'Network',
-                shared: 'Técnicos',
-                published: true,
-                status: 'Aprobado',
-                likes: 8,
-                comments: 1,
-                updated: '10 Feb, 2026',
-                content: 'Parámetros de configuración para la red unificada "Corp-Wifi". Incluye segmentación de VLANs 10 y 20 para invitados y corporativos.',
-                tables: null
-            },
-            {
-                id: 'SOL-3',
-                title: 'Master Key Routers Edge',
-                topic: 'Security',
-                shared: 'Admins',
-                published: false,
-                status: 'Borrador',
-                likes: 0,
-                comments: 0,
-                updated: '20 Ene, 2026',
-                content: 'Procedimiento seguro de recuperación de claves maestras para routers de borde Cisco ASR. **Confidencial**.',
-                tables: null
-            },
-            {
-                id: 'SOL-4',
-                title: 'MFA ServiceDesk Integration',
-                topic: 'Software',
-                shared: 'Todos',
-                published: true,
-                status: 'Aprobado',
-                likes: 15,
-                comments: 5,
-                updated: '15 Ene, 2026',
-                content: 'Guía para vincular Microsoft Authenticator con la cuenta de ServiceDesk Plus.',
-                tables: null
-            },
-            {
-                id: 'SOL-5',
-                title: 'Windows Server Reactivation Guide',
-                topic: 'Servers',
-                shared: 'Soporte L2',
-                published: true,
-                status: 'Revisión',
-                likes: 2,
-                comments: 0,
-                updated: '10 Ene, 2026',
-                content: 'Pasos para reactivar licencias de volumen (KMS) en servidores Windows 2019/2022 tras caída de host.',
-                tables: null
-            },
-            {
-                id: 'SOL-6',
-                title: 'GrandStream VoIP Provisioning',
-                topic: 'Hardware',
-                shared: 'Técnicos',
-                published: true,
-                status: 'Aprobado',
-                likes: 5,
-                comments: 2,
-                updated: '05 Ene, 2026',
-                content: 'Plantilla XML para aprovisionamiento automático de teléfonos GrandStream GXP2170.',
-                tables: null
-            },
-            {
-                id: 'SOL-7',
-                title: 'VMWare ESXi Upgrade Path',
-                topic: 'Servers',
-                shared: 'Infraestructura',
-                published: false,
-                status: 'Borrador',
-                likes: 0,
-                comments: 1,
-                updated: '03 Ene, 2026',
-                content: 'Ruta de actualización segura de ESXi 7.0 a 8.0. Verificar compatibilidad HCL antes de proceder.',
-                tables: null
-            },
-            {
-                id: 'SOL-8',
-                title: 'VPN Client Troubleshooting',
-                topic: 'Software',
-                shared: 'Helpdesk',
-                published: true,
-                status: 'Aprobado',
-                likes: 24,
-                comments: 8,
-                updated: '28 Dic, 2025',
-                content: 'Solución a errores comunes (Error 619, 800) en el cliente VPN FortiClient.',
-                tables: null
-            },
-            {
-                id: 'SOL-9',
-                title: 'Printer Spooler Reset Script',
-                topic: 'Software',
-                shared: 'Helpdesk',
-                published: true,
-                status: 'Aprobado',
-                likes: 45,
-                comments: 12,
-                updated: '15 Dic, 2025',
-                content: 'Script PowerShell para reiniciar el servicio de cola de impresión en equipos remotos.',
-                tables: null
-            },
-            {
-                id: 'SOL-10',
-                title: 'Firewall Policy Naming Convention',
-                topic: 'Security',
-                shared: 'Seguridad',
-                published: false,
-                status: 'Obsoleto',
-                likes: 1,
-                comments: 0,
-                updated: '10 Nov, 2025',
-                content: 'Convención de nombres antigua. Ver documento v2.0 para la norma actual.',
-                tables: null
-            }
-        ];
+        // ── Real data from SDP Cloud API ─────────────────────────────
+        let solutions = [];
 
-        // RENDER LIST
+        async function loadSolutions() {
+            const tbody = document.getElementById('solutions-table-body');
+            tbody.innerHTML = `
+                <tr><td colspan="6" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    Cargando soluciones desde ServiceDesk Plus Cloud...
+                </td></tr>`;
+
+            try {
+                const res = await fetch('/api/solutions/');
+                const data = await res.json();
+
+                if (data.error) throw new Error(data.error);
+
+                solutions = data.solutions;
+                renderSolutions();
+
+                // Check URL params after data is loaded
+                const solutionId = new URLSearchParams(window.location.search).get('solution');
+                if (solutionId) openDetail(solutionId, false);
+
+            } catch (err) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" class="text-center py-5 text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error cargando soluciones: ${err.message}
+                    </td></tr>`;
+            }
+        }
+
+        // ── Status helpers ────────────────────────────────────────────
+        function statusLabel(status) {
+            const map = { 'Approved': 'Aprobado', 'Draft': 'Borrador', 'Review': 'Revisión', 'Expired': 'Caducado' };
+            return map[status] || status;
+        }
+
+        function statusClass(status) {
+            if (status === 'Approved') return 'bg-success-subtle text-success';
+            if (status === 'Draft') return 'bg-secondary-subtle text-secondary';
+            if (status === 'Review') return 'bg-warning-subtle text-warning-emphasis';
+            return 'bg-light text-dark';
+        }
+
+        // ── Render list ───────────────────────────────────────────────
         function renderSolutions() {
             const tbody = document.getElementById('solutions-table-body');
             tbody.innerHTML = '';
 
             solutions.forEach(sol => {
-                const badgeClass = sol.published ? 'status-published' : 'status-draft';
-                const badgeText = sol.published ? '<i class="bi bi-check2"></i> Publicado' : '<i class="bi bi-pause-circle"></i> No pub.';
-
-                // Status Review Badge
-                let statusClass = 'bg-light text-dark';
-                if (sol.status === 'Aprobado') statusClass = 'bg-success-subtle text-success';
-                if (sol.status === 'Borrador') statusClass = 'bg-secondary-subtle text-secondary';
-                if (sol.status === 'Revisión') statusClass = 'bg-warning-subtle text-warning-emphasis';
+                const label = statusLabel(sol.status);
+                const cls = statusClass(sol.status);
 
                 const tr = document.createElement('tr');
                 tr.style.cursor = 'pointer';
@@ -654,17 +544,16 @@
                                 <div class="fw-bold text-dark">${sol.title}</div>
                                 <div class="small text-muted d-flex align-items-center gap-2">
                                     <span class="badge bg-light text-secondary border">${sol.topic}</span>
-                                    <span>${sol.id}</span>
+                                    <span>${sol.display_id}</span>
                                 </div>
                             </div>
                         </div>
                     </td>
-                    <td class="small text-muted"><i class="bi bi-people me-1"></i>${sol.shared}</td>
-                    <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
-                    <td><span class="badge ${statusClass} rounded-pill border border-0 px-2 py-1 small fw-normal">${sol.status}</span></td>
+                    <td class="small text-muted"><i class="bi bi-person me-1"></i>${sol.author}</td>
+                    <td class="small text-muted"><i class="bi bi-clock me-1"></i>${sol.updated}</td>
+                    <td><span class="badge ${cls} rounded-pill border border-0 px-2 py-1 small fw-normal">${label}</span></td>
                     <td class="text-end pe-4">
-                        <span class="stat-item"><i class="bi bi-hand-thumbs-up-fill text-primary"></i> ${sol.likes}</span>
-                        <span class="stat-item ms-3"><i class="bi bi-chat-dots-fill text-info"></i> ${sol.comments}</span>
+                        <span class="stat-item"><i class="bi bi-eye-fill text-primary"></i> ${sol.hits}</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -673,72 +562,43 @@
             document.getElementById('count-display').innerText = solutions.length;
         }
 
-        // NAVIGATION LOGIC (SPA)
+        // ── Detail view ───────────────────────────────────────────────
         function openDetail(id, pushState = true) {
             const sol = solutions.find(s => s.id === id);
             if (!sol) return;
 
-            // Populate Detail
-            document.getElementById('detail-id').innerText = sol.id;
+            document.getElementById('detail-id').innerText = sol.display_id;
             document.getElementById('detail-title').innerText = sol.title;
             document.getElementById('detail-topic').innerText = sol.topic;
             document.getElementById('detail-date').innerText = sol.updated;
-            document.getElementById('detail-content').innerHTML = sol.content ? `<p class="fs-6">${sol.content}</p>` : '';
+            document.getElementById('detail-content').innerHTML =
+                sol.description ? `<p class="fs-6">${sol.description}</p>` : '<p class="text-muted">Sin descripción.</p>';
 
-            // Render specific tables
+            // Keywords as chips
             const tableContainer = document.getElementById('detail-tables');
             tableContainer.innerHTML = '';
-
-            if (sol.tables) {
-                // Santo Domingo
-                if (sol.tables.santoDomingo) {
-                    let html = `<div class="col-md-6">
-                        <div class="card-custom h-100 overflow-hidden border-0 shadow-sm">
-                            <div class="card-header bg-dark text-white text-center fw-bold py-3">
-                                <i class="bi bi-building me-2"></i>SANTO DOMINGO
-                            </div>
-                            <ul class="list-group list-group-flush">`;
-                    sol.tables.santoDomingo.forEach((item, index) => {
-                        const bgClass = index % 2 === 0 ? 'bg-light' : 'bg-white';
-                        html += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 ${bgClass}">
-                            <span class="fw-bold text-success font-monospace fs-6">${item.ext}</span>
-                            <span class="text-dark">${item.name}</span>
-                        </li>`;
-                    });
-                    html += `</ul></div></div>`;
-                    tableContainer.innerHTML += html;
-                }
-
-                // Santiago
-                if (sol.tables.santiago) {
-                    let html = `<div class="col-md-6">
-                        <div class="card-custom h-100 overflow-hidden border-0 shadow-sm">
-                            <div class="card-header bg-dark text-white text-center fw-bold py-3">
-                                <i class="bi bi-building me-2"></i>SANTIAGO
-                            </div>
-                            <ul class="list-group list-group-flush">`;
-                    sol.tables.santiago.forEach((item, index) => {
-                        const bgClass = index % 2 === 0 ? 'bg-light' : 'bg-white';
-                        html += `<li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 ${bgClass}">
-                            <span class="fw-bold text-danger font-monospace fs-6">${item.ext}</span>
-                            <span class="text-dark">${item.name}</span>
-                        </li>`;
-                    });
-                    html += `</ul></div></div>`;
-                    tableContainer.innerHTML += html;
-                }
+            if (sol.keywords) {
+                const chips = sol.keywords.split(',').map(k =>
+                    `<span class="badge bg-light text-secondary border me-1 mb-1">${k.trim()}</span>`
+                ).join('');
+                tableContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="card-custom p-3">
+                            <p class="text-muted small text-uppercase fw-bold mb-2"><i class="bi bi-tags me-1"></i>Palabras clave</p>
+                            ${chips}
+                        </div>
+                    </div>`;
             }
 
-            // Switch Views with Animation
+            // Switch views
             document.getElementById('view-list').classList.add('d-none-custom');
             document.getElementById('view-detail').classList.remove('d-none-custom');
             window.scrollTo(0, 0);
 
-            // History API
             if (pushState) {
                 const url = new URL(window.location);
                 url.searchParams.set('solution', id);
-                history.pushState({ view: 'detail', id: id }, '', url);
+                history.pushState({ view: 'detail', id }, '', url);
             }
         }
 
@@ -758,7 +618,6 @@
             }
         }
 
-        // Handle Browser Back Button
         window.onpopstate = function (event) {
             if (event.state && event.state.view === 'detail') {
                 openDetail(event.state.id, false);
@@ -768,27 +627,17 @@
         };
 
         function filterByTopic(topic) {
-            const items = document.querySelectorAll('.sidebar-item');
-            items.forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             if (event && event.target) {
-                // Handling click on icon or text
                 const target = event.target.closest('.sidebar-item');
                 if (target) target.classList.add('active');
             }
-            console.log("Filtering by: " + topic);
         }
 
-        // INIT
-        document.addEventListener('DOMContentLoaded', () => {
-            renderSolutions();
-            // Check URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const solutionId = urlParams.get('solution');
-            if (solutionId) {
-                openDetail(solutionId, false);
-            }
-        });
+        // ── Init ───────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', loadSolutions);
     </script>
+
 </body>
 
 </html>
