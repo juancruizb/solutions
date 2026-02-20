@@ -343,7 +343,15 @@
             style="font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Entradas
         </div>
 
-        <div class="timeline-nav-item active" onclick="goToEntry('e1', this)">
+        <div class="timeline-nav-item active" onclick="goToEntry('e0b', this)">
+            <span class="time-badge">2026-02-19 21:08</span>
+            Plan: REST API + Caché
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e0a', this)">
+            <span class="time-badge">2026-02-19 21:03</span>
+            Vista Tópicos
+        </div>
+        <div class="timeline-nav-item" onclick="goToEntry('e1', this)">
             <span class="time-badge">2026-02-19 16:08</span>
             Push rama 20260219
         </div>
@@ -383,15 +391,27 @@
                 style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
                 <i class="bi bi-globe2"></i> /home/
             </a>
+            <a href="http://127.0.0.1:8000/topics/" target="_blank"
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
+                <i class="bi bi-tags"></i> /topics/
+            </a>
             <a href="http://127.0.0.1:8000/historico/" target="_blank"
                 style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
                 <i class="bi bi-journal-code"></i> /historico/
             </a>
             <a href="http://127.0.0.1:8000/api/solutions/" target="_blank"
-                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:var(--text-muted); text-decoration:none;">
-                <i class="bi bi-braces"></i> /api/solutions/ <span
-                    style="font-size:0.7rem; background:rgba(255,193,7,0.15); color:#ffc107; padding:1px 6px; border-radius:10px; margin-left:auto;">pendiente</span>
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
+                <i class="bi bi-braces"></i> /api/solutions/
             </a>
+            <a href="http://127.0.0.1:8000/api/topics/" target="_blank"
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:#6ea8fe; text-decoration:none; border-bottom:1px solid var(--border);">
+                <i class="bi bi-braces"></i> /api/topics/
+            </a>
+            <span
+                style="display:flex; align-items:center; gap:8px; padding:8px 0; font-size:0.82rem; color:var(--text-muted);">
+                <i class="bi bi-braces"></i> /api/v1/ <span
+                    style="font-size:0.7rem; background:rgba(255,193,7,0.15); color:#ffc107; padding:1px 6px; border-radius:10px; margin-left:auto;">pendiente</span>
+            </span>
         </div>
 
         <hr style="border-color:var(--border); margin:16px 24px;">
@@ -402,15 +422,16 @@
         <div class="px-4">
             <div class="task-item">
                 <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
-                <span style="font-size:0.82rem;">Endpoint /api/solutions/</span>
+                <span style="font-size:0.82rem;">Crear app <code>api/</code> con caché</span>
             </div>
             <div class="task-item">
                 <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
-                <span style="font-size:0.82rem;">Conectar frontend JS</span>
+                <span style="font-size:0.82rem;">Endpoints <code>/api/v1/solutions/</code> y
+                    <code>/api/v1/topics/</code></span>
             </div>
             <div class="task-item">
                 <i class="bi bi-circle text-warning mt-1" style="font-size:0.8rem;"></i>
-                <span style="font-size:0.82rem;">Filtro soluciones públicas</span>
+                <span style="font-size:0.82rem;">Endpoint <code>POST /api/v1/cache/flush/</code></span>
             </div>
         </div>
     </div>
@@ -472,6 +493,150 @@
                             <div style="color:var(--text-muted); font-size:0.75rem;">API local de soluciones</div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry 0b: REST API Plan -->
+        <div class="entry-card" id="e0b">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 21:08</span>
+                <h6 class="entry-title"><i class="bi bi-lightning-charge me-2 text-warning"></i>Plan: REST API
+                    <code>api/</code> con Caché</h6>
+                <span class="chip chip-warning ms-auto"><i class="bi bi-hourglass-split"></i> Pendiente</span>
+            </div>
+            <div class="entry-body">
+
+                <div class="section-label">¿Por qué?</div>
+                <p style="color:var(--text-muted); font-size:0.83rem; margin:0 0 16px;">
+                    El portal actualmente refresca el token OAuth en <strong>cada petición</strong>, lo que activa el
+                    rate-limit de Zoho
+                    (<em>"Too many requests"</em>). La solución es cachear las respuestas de SDP Cloud durante 1 hora
+                    y estructurar los endpoints como una API REST versionada reutilizable.
+                </p>
+
+                <div class="section-label">Arquitectura propuesta</div>
+                <div class="code-block" style="font-size:0.8rem; line-height:1.7;">
+                    <span class="str">SDP Cloud API</span> → <span class="kw">Django api/ app</span> → <span
+                        class="cm"># cache.get/set (TTL 1h)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+                        class="str">portal/home/</span> ← fetch(<span class="str">'/api/v1/solutions/'</span>)
+                </div>
+
+                <div class="section-label mt-3">Estructura de archivos</div>
+                <div class="file-tree">
+                    <span class="file-dir">kb/api/</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── __init__.py</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── apps.py</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── cache.py</span> <span style="color:var(--text-muted);">←
+                        helpers get/set + flush</span><br>
+                    &nbsp;&nbsp;<span class="file-py">├── views.py</span> <span style="color:var(--text-muted);">←
+                        lógica REST + normalización</span><br>
+                    &nbsp;&nbsp;<span class="file-py">└── urls.py</span> <span style="color:var(--text-muted);">← rutas
+                        /api/v1/</span>
+                </div>
+
+                <div class="section-label mt-3">Endpoints REST</div>
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Método</th>
+                            <th>URL</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>GET</code></td>
+                            <td><code>/api/v1/solutions/</code></td>
+                            <td>Lista normalizada con caché. Soporta <code>?topic=</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>GET</code></td>
+                            <td><code>/api/v1/solutions/{id}/</code></td>
+                            <td>Detalle de una solución</td>
+                        </tr>
+                        <tr>
+                            <td><code>GET</code></td>
+                            <td><code>/api/v1/topics/</code></td>
+                            <td>Tópicos únicos con conteo</td>
+                        </tr>
+                        <tr>
+                            <td><code>POST</code></td>
+                            <td><code>/api/v1/cache/flush/</code></td>
+                            <td>Invalida caché manualmente</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="section-label mt-3">Response Format</div>
+                <div class="code-block" style="font-size:0.79rem;">
+                    {<br>
+                    &nbsp;&nbsp;<span class="str">"count"</span>: 21,<br>
+                    &nbsp;&nbsp;<span class="str">"cached"</span>: <span class="kw">true</span>, &nbsp;<span
+                        class="cm">← indica si viene de caché</span><br>
+                    &nbsp;&nbsp;<span class="str">"results"</span>: [ { <span class="str">"display_id"</span>: <span
+                        class="str">"SOL-21"</span>, <span class="str">"title"</span>: <span class="str">"..."</span>,
+                    ... } ]<br>
+                    }
+                </div>
+
+                <div class="section-label mt-3">Caché — <code>django.core.cache.backends.locmem</code></div>
+                <div class="code-block" style="font-size:0.79rem;">
+                    <span class="cm"># settings.py — sin dependencias extra</span><br>
+                    CACHES = { <span class="str">"default"</span>: { <span class="str">"BACKEND"</span>: <span
+                        class="str">"django.core.cache.backends.locmem.LocMemCache"</span> } }
+                </div>
+
+                <div class="section-label mt-3">Workflow documentado</div>
+                <div class="code-block" style="color:#6ea8fe;">📄 .agent/workflows/api_rest_cache.md</div>
+            </div>
+        </div>
+
+        <!-- Entry 0a: Topics page -->
+        <div class="entry-card" id="e0a">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 21:03</span>
+                <h6 class="entry-title"><i class="bi bi-tags me-2 text-primary"></i>Vista <code>/topics/</code> y
+                    sidebar dinámico</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Archivo</th>
+                            <th>Cambio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>resources/solutions/sdp_solutions.py</code></td>
+                            <td>Nuevo método <code>get_topics(token)</code> — deduplica tópicos de las soluciones</td>
+                        </tr>
+                        <tr>
+                            <td><code>portal/views.py</code></td>
+                            <td>Vista <code>api_topics</code> → <code>/api/topics/</code> y vista <code>topics</code> →
+                                <code>/topics/</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>portal/templates/portal/topics.html</code></td>
+                            <td>Grid de tarjetas con icono, nombre y conteo por tópico</td>
+                        </tr>
+                        <tr>
+                            <td><code>solutionsportal.html</code></td>
+                            <td>Sidebar dinámico cargado desde <code>/api/topics/</code> con
+                                <code>filterByTopic()</code> funcional</td>
+                        </tr>
+                        <tr>
+                            <td><code>resources/token/sdp_auth.py</code></td>
+                            <td>Caché de <code>access_token</code> por expiración (50 min) para evitar rate-limit</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="code-block mt-3" style="color:#2dce89;">
+                    ✅ 14 tópicos reales · 21 soluciones · Sidebar filtra la tabla al hacer click
                 </div>
             </div>
         </div>
@@ -766,7 +931,7 @@
         </div>
 
         <div class="text-center py-4" style="color:var(--text-muted); font-size:0.8rem;">
-            <i class="bi bi-clock me-1"></i>Última actualización: 2026-02-19 16:11 · Proyecto KB - Solutions Portal
+            <i class="bi bi-clock me-1"></i>Última actualización: 2026-02-19 21:10 · Proyecto KB - Solutions Portal
         </div>
 
     </div>
