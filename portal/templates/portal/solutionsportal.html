@@ -273,24 +273,15 @@
             </div>
         </div>
         <div id="topic-list">
-            <!-- Topics will be injected here -->
-            <div class="sidebar-item active" onclick="filterByTopic('all')">
+            <!-- "All" static item -->
+            <div class="sidebar-item active" id="filter-all" onclick="filterByTopic('all', this)">
                 <i class="bi bi-grid-fill"></i> Todos los temas
+                <span id="count-badge-all" class="ms-auto badge bg-primary-subtle text-primary"
+                    style="font-size:0.7rem;"></span>
             </div>
-            <div class="sidebar-item" onclick="filterByTopic('Network')">
-                <i class="bi bi-router"></i> Network
-            </div>
-            <div class="sidebar-item" onclick="filterByTopic('Hardware')">
-                <i class="bi bi-cpu"></i> Hardware
-            </div>
-            <div class="sidebar-item" onclick="filterByTopic('Software')">
-                <i class="bi bi-window-stack"></i> Software
-            </div>
-            <div class="sidebar-item" onclick="filterByTopic('Servers')">
-                <i class="bi bi-hdd-rack"></i> Servidores
-            </div>
-            <div class="sidebar-item" onclick="filterByTopic('Security')">
-                <i class="bi bi-shield-lock"></i> Seguridad
+            <!-- Dynamic topics injected here -->
+            <div id="sidebar-topics-loading" class="px-4 py-2 text-muted" style="font-size:0.8rem;">
+                <div class="spinner-border spinner-border-sm me-1"></div> Cargando...
             </div>
 
             <div class="mt-4 px-4 text-uppercase text-muted"
@@ -626,16 +617,69 @@
             }
         };
 
-        function filterByTopic(topic) {
-            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-            if (event && event.target) {
-                const target = event.target.closest('.sidebar-item');
-                if (target) target.classList.add('active');
+        // ── Icon map ───────────────────────────────────────────────────
+        const ICON_MAP = {
+            'solution_Hardware': 'bi-cpu',
+            'solution_Software': 'bi-window-stack',
+            'solution_Internet': 'bi-globe2',
+            'solution_Printers': 'bi-printer',
+            'solution_Routers': 'bi-router',
+            'solution_SSO': 'bi-shield-check',
+            'solution_Safety': 'bi-shield-lock',
+            'solution_General': 'bi-folder2-open',
+        };
+
+        // ── Topic filter ───────────────────────────────────────────────
+        let activeTopicFilter = 'all';
+
+        function filterByTopic(topic, el) {
+            activeTopicFilter = topic;
+            document.querySelectorAll('.sidebar-item').forEach(e => e.classList.remove('active'));
+            if (el) el.classList.add('active');
+            if (solutions.length > 0) applyTopicFilter();
+        }
+
+        function applyTopicFilter() {
+            const filtered = activeTopicFilter === 'all'
+                ? solutions
+                : solutions.filter(s => s.topic === activeTopicFilter);
+            renderSolutions(filtered);
+        }
+
+        // ── Build sidebar from /api/topics/ ───────────────────────────
+        async function buildSidebarTopics() {
+            try {
+                const res = await fetch('/api/topics/');
+                const data = await res.json();
+                const loader = document.getElementById('sidebar-topics-loading');
+                const allBadge = document.getElementById('count-badge-all');
+                const adminDiv = document.querySelector('#topic-list .mt-4');
+
+                const total = data.topics.reduce((s, t) => s + t.count, 0);
+                if (allBadge) allBadge.textContent = total;
+                if (loader) loader.remove();
+
+                data.topics.forEach(t => {
+                    const icon = ICON_MAP[t.icon_key] || 'bi-folder2-open';
+                    const div = document.createElement('div');
+                    div.className = 'sidebar-item';
+                    div.onclick = function () { filterByTopic(t.name, div); };
+                    div.innerHTML = `
+                        <i class="bi ${icon}"></i> ${t.name}
+                        <span class="ms-auto badge bg-light text-secondary border" style="font-size:0.68rem;">${t.count}</span>`;
+                    if (adminDiv) adminDiv.parentNode.insertBefore(div, adminDiv);
+                });
+            } catch (e) {
+                console.warn('Topics sidebar:', e);
+                const loader = document.getElementById('sidebar-topics-loading');
+                if (loader) loader.remove();
             }
         }
 
         // ── Init ───────────────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', loadSolutions);
+        document.addEventListener('DOMContentLoaded', () => {
+            Promise.all([loadSolutions(), buildSidebarTopics()]);
+        });
     </script>
 
 </body>
