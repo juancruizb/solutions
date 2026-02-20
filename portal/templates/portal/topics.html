@@ -298,7 +298,7 @@
         // ── Fetch topics ─────────────────────────────────────────────
         async function loadTopics() {
             try {
-                const res = await fetch('/api/topics/');
+                const res = await fetch('/api/v1/topics/');
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
 

@@ -473,7 +473,7 @@
                 </td></tr>`;
 
             try {
-                const res = await fetch('/api/solutions/');
+                const res = await fetch('/api/v1/solutions/');
                 const data = await res.json();
 
                 if (data.error) throw new Error(data.error);
@@ -649,7 +649,7 @@
         // ── Build sidebar from /api/topics/ ───────────────────────────
         async function buildSidebarTopics() {
             try {
-                const res = await fetch('/api/topics/');
+                const res = await fetch('/api/v1/topics/');
                 const data = await res.json();
                 const loader = document.getElementById('sidebar-topics-loading');
                 const allBadge = document.getElementById('count-badge-all');

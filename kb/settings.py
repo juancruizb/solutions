@@ -38,7 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'portal',
+    'api',
 ]
+
+# Cache backend — LocMemCache (in-process, no extra dependencies)
+# For production, swap to Redis: 'django.core.cache.backends.redis.RedisCache'
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'sdp-cache',
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
