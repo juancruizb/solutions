@@ -20,38 +20,31 @@ def _get_token():
 def solutions_list(request):
     """
     GET /api/v1/solutions/
-    Query params:
-      ?topic=Internet       → filter by topic name
-      ?status=Approved      → filter by approval status
+    Flow: LocMemCache → DB → (if DB empty) SDP Cloud
+    Filters: ?topic=Internet  ?status=Approved
     """
     try:
-        token = _get_token()
-        raw, cached = get_cached_solutions(token)
+        data, cached = get_cached_solutions()
 
-        results = [{
-            "id":         s.get("id", ""),
-            "display_id": s.get("display_id", {}).get("display_value", ""),
-            "title":      s.get("title", "Sin título"),
-            "description": s.get("description", ""),
-            "topic":      s.get("topic", {}).get("name", ""),
-            "status":     s.get("approval_status", {}).get("name", ""),
-            "author":     s.get("created_by", {}).get("name", ""),
-            "updated":    s.get("last_updated_time", {}).get("display_value", ""),
-            "hits":       int(s.get("no_of_hits", 0) or 0),
-            "keywords":   s.get("keywords", ""),
-            "is_public":  s.get("is_public", False),
-        } for s in raw]
+        if data is None:
+            # DB empty — fall back to live SDP call and sync on the fly
+            token = _get_token()
+            from resources.solutions.sdp_solutions import SDPSolutions
+            raw = SDPSolutions.get_all_paginated(token)
+            from .sync import upsert_solutions
+            data = upsert_solutions(raw)
+            cached = False
 
         # Optional filters
         if topic := request.GET.get("topic"):
-            results = [r for r in results if r["topic"] == topic]
+            data = [r for r in data if r["topic"] == topic]
         if status := request.GET.get("status"):
-            results = [r for r in results if r["status"].lower() == status.lower()]
+            data = [r for r in data if r["status"].lower() == status.lower()]
 
         return JsonResponse({
-            "count":   len(results),
+            "count":   len(data),
             "cached":  cached,
-            "results": results,
+            "results": data,
         })
 
     except Exception as e:
@@ -61,29 +54,56 @@ def solutions_list(request):
 def solution_detail(request, solution_id):
     """
     GET /api/v1/solutions/<solution_id>/
-    Returns raw detail from SDP (not normalised — full data available).
+    Reads from DB — no token required.
     """
     try:
-        token = _get_token()
-        from resources.solutions.sdp_solutions import SDPSolutions
-        data = SDPSolutions.get_by_id(token, solution_id)
-        return JsonResponse(data)
+        from .models import Solution
+        sol = Solution.objects.select_related("topic").get(sdp_id=solution_id)
+        return JsonResponse({
+            "id":          sol.sdp_id,
+            "display_id":  sol.display_id,
+            "title":       sol.title,
+            "description": sol.description,
+            "topic":       sol.topic.name if sol.topic else "",
+            "status":      sol.status,
+            "author":      sol.author,
+            "updated":     sol.updated_sdp,
+            "hits":        sol.hits,
+            "keywords":    sol.keywords,
+            "is_public":   sol.is_public,
+            "synced_at":   sol.synced_at.isoformat(),
+        })
     except Exception as e:
+        from django.http import Http404
+        from .models import Solution
+        try:
+            Solution.objects.get(sdp_id=solution_id)
+        except Solution.DoesNotExist:
+            return JsonResponse({"error": "Solution not found"}, status=404)
         return JsonResponse({"error": str(e)}, status=500)
 
 
 def topics_list(request):
     """
     GET /api/v1/topics/
+    Flow: LocMemCache → DB
     """
     try:
-        token = _get_token()
-        topics, cached = get_cached_topics(token)
+        data, cached = get_cached_topics()
+
+        if data is None:
+            token = _get_token()
+            from resources.solutions.sdp_solutions import SDPSolutions
+            raw = SDPSolutions.get_topics(token)
+            data = raw
+            cached = False
+
         return JsonResponse({
-            "count":   len(topics),
+            "count":   len(data),
             "cached":  cached,
-            "results": topics,
+            "results": data,
         })
+
     except Exception as e:
         return JsonResponse({"error": str(e), "results": []}, status=500)
 
@@ -93,10 +113,10 @@ def topics_list(request):
 def cache_flush(request):
     """
     POST /api/v1/cache/flush/
-    Manually invalidates cached solutions and topics.
+    Invalidates both cache keys so next request re-reads from DB.
     """
     flush_cache()
     return JsonResponse({
         "flushed": ["sdp:solutions", "sdp:topics"],
-        "message": "Cache cleared. Next request will fetch fresh data from SDP Cloud.",
+        "message": "Cache cleared. Next request will read from DB.",
     })

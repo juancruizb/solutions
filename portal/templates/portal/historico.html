@@ -497,6 +497,128 @@
             </div>
         </div>
 
+        <!-- Entry 0c: Plan DB Model -->
+        <div class="entry-card" id="e0c">
+            <div class="entry-header">
+                <span class="entry-timestamp">2026-02-19 21:28</span>
+                <h6 class="entry-title"><i class="bi bi-database-add me-2 text-warning"></i>Plan: Modelos Django + Sync Command — Persistencia local en SQLite</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
+            </div>
+            <div class="entry-body">
+
+                <div class="section-label">Objetivo</div>
+                <p style="color:var(--text-muted); font-size:0.83rem; margin:0 0 16px;">
+                    Eliminar la dependencia del token OAuth de Zoho en cada request.
+                    Las soluciones y tópicos se guardan en <strong>SQLite</strong> mediante un comando de sincronización.
+                    El flujo de servicio es: <code>LocMemCache → DB → (solo si DB vacía) SDP Cloud</code>.
+                    Una vez sincronizado, el portal funciona <strong>sin ninguna llamada a Zoho</strong>.
+                </p>
+
+                <div class="section-label">Arquitectura de datos</div>
+                <div class="code-block" style="font-size:0.79rem; line-height:1.9;">
+                    <span class="cm"># Sincronización (cron / manual)</span><br>
+                    <span class="kw">python manage.py sync_solutions</span><br>
+                    &nbsp;&nbsp;→ SDPAuth.get_access_token() → SDP Cloud<br>
+                    &nbsp;&nbsp;→ <span class="str">Topic.objects.update_or_create()</span><br>
+                    &nbsp;&nbsp;→ <span class="str">Solution.objects.update_or_create()</span><br>
+                    &nbsp;&nbsp;→ <span class="kw">SQLite (db.sqlite3)</span><br><br>
+                    <span class="cm"># Lectura (cada request de portales)</span><br>
+                    GET /api/v1/solutions/<br>
+                    &nbsp;&nbsp;→ cache.get("sdp:solutions") → <span class="kw">HIT</span> → return<br>
+                    &nbsp;&nbsp;→ <span class="kw">MISS</span> → Solution.objects.all() → cache.set() → return
+                </div>
+
+                <div class="section-label mt-3">Estructura de archivos — <code>kb/api/</code></div>
+                <div class="file-tree">
+                    <span class="file-dir">kb/</span><br>
+                    <span class="file-dir">&nbsp;&nbsp;api/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── models.py</span>
+                    &nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Solution + Topic (ORM)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── admin.py</span>
+                    &nbsp;&nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Registro en /admin/ con filtros y búsqueda</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── cache.py</span>
+                    &nbsp;&nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Capa LocMemCache → ORM (cache miss → DB query)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── sync.py</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← upsert_solutions() — lógica compartida</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── views.py</span>
+                    &nbsp;&nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Vistas REST (cache → DB → SDP fallback)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">├── urls.py</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Router /api/v1/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-dir">├── migrations/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">└── 0001_initial.py</span>
+                    &nbsp;&nbsp;<span style="color:var(--text-muted); font-size:0.78rem;">← Create model Topic + Solution</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="file-dir">└── management/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-dir">└── commands/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file-py">└── sync_solutions.py</span>
+                    <span style="color:var(--text-muted); font-size:0.78rem;">← Management command</span>
+                </div>
+
+                <div class="section-label mt-3">Modelo <code>Topic</code></div>
+                <table class="table-dark-custom">
+                    <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>sdp_id</code></td><td><code>CharField(50)</code></td><td>ID nativo de SDP Cloud. Único e indexado.</td></tr>
+                        <tr><td><code>name</code></td><td><code>CharField(100)</code></td><td>Nombre del tópico (e.g. "Internet")</td></tr>
+                        <tr><td><code>icon_key</code></td><td><code>CharField(100)</code></td><td>Clave de ícono para el <code>ICON_MAP</code> del portal</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="section-label mt-3">Modelo <code>Solution</code></div>
+                <table class="table-dark-custom">
+                    <thead><tr><th>Campo</th><th>Tipo</th><th>Nullable</th><th>Descripción</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>sdp_id</code></td><td><code>CharField(50)</code></td><td>—</td><td>ID nativo SDP. Único, indexado. Clave de upsert.</td></tr>
+                        <tr><td><code>display_id</code></td><td><code>CharField(20)</code></td><td>blank</td><td>Código legible: "SOL-21"</td></tr>
+                        <tr><td><code>title</code></td><td><code>CharField(500)</code></td><td>—</td><td>Título de la solución</td></tr>
+                        <tr><td><code>description</code></td><td><code>TextField</code></td><td>blank</td><td>Contenido completo de la solución</td></tr>
+                        <tr><td><code>topic</code></td><td><code>ForeignKey(Topic)</code></td><td>null</td><td>Relación al tópico. <code>SET_NULL</code> si se elimina el tópico.</td></tr>
+                        <tr><td><code>status</code></td><td><code>CharField(50)</code></td><td>blank</td><td>"Approved", "Draft", etc.</td></tr>
+                        <tr><td><code>author</code></td><td><code>CharField(200)</code></td><td>blank</td><td>Nombre del autor en SDP</td></tr>
+                        <tr><td><code>updated_sdp</code></td><td><code>CharField(100)</code></td><td>blank</td><td>Fecha de actualización (display_value de SDP)</td></tr>
+                        <tr><td><code>hits</code></td><td><code>IntegerField</code></td><td>default=0</td><td>Número de visualizaciones en SDP Cloud</td></tr>
+                        <tr><td><code>keywords</code></td><td><code>CharField(500)</code></td><td>blank</td><td>Tags/palabras clave para búsqueda full-text</td></tr>
+                        <tr><td><code>is_public</code></td><td><code>BooleanField</code></td><td>default=False</td><td>Visibilidad pública del artículo</td></tr>
+                        <tr><td><code>synced_at</code></td><td><code>DateTimeField</code></td><td>auto_now</td><td>Timestamp de la última sincronización desde SDP</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="section-label mt-3">Ventajas vs. solo LocMemCache</div>
+                <table class="table-dark-custom">
+                    <thead><tr><th>Característica</th><th>Solo LocMemCache</th><th>DB + Cache</th></tr></thead>
+                    <tbody>
+                        <tr><td>Persiste tras reinicio</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>Admin gratis en /admin/</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>ORM queries (filtros, order)</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>Full-text search</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>Independencia de Zoho OAuth</td><td>Parcial</td><td><span style="color:#2dce89;">✅ Total</span></td></tr>
+                        <tr><td>Compartida entre workers</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>Historial de sync (synced_at)</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                        <tr><td>Exportable (dumpdata)</td><td><span style="color:#e74c3c;">✗</span></td><td><span style="color:#2dce89;">✅</span></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="section-label mt-3">Comando de sincronización</div>
+                <div class="code-block" style="font-size:0.79rem;">
+                    <span class="cm"># Sincronización manual</span><br>
+                    <span class="kw">python manage.py sync_solutions</span><br><br>
+                    <span class="cm"># Con flags</span><br>
+                    python manage.py sync_solutions <span class="str">--verbose</span> &nbsp;<span class="cm"># muestra cada solución</span><br>
+                    python manage.py sync_solutions <span class="str">--dry-run</span> &nbsp;<span class="cm"># fetch sin escribir a DB</span><br><br>
+                    <span class="cm"># Cron (cada hora)</span><br>
+                    <span class="str">0 * * * *</span> /ruta/venv/bin/python manage.py sync_solutions
+                </div>
+
+                <div class="section-label mt-3">Migraciones aplicadas</div>
+                <div class="code-block" style="font-size:0.79rem;">
+                    python manage.py makemigrations api<br>
+                    &nbsp;&nbsp;→ <span class="str">api/migrations/0001_initial.py</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Create model Topic<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;+ Create model Solution<br>
+                    python manage.py migrate → <span class="kw">Applying api.0001_initial... OK</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Entry 0b: REST API Implementada -->
         <div class="entry-card" id="e0b">
             <div class="entry-header">
