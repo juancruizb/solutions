@@ -497,100 +497,184 @@
             </div>
         </div>
 
-        <!-- Entry 0b: REST API Plan -->
+        <!-- Entry 0b: REST API Implementada -->
         <div class="entry-card" id="e0b">
             <div class="entry-header">
-                <span class="entry-timestamp">2026-02-19 21:08</span>
-                <h6 class="entry-title"><i class="bi bi-lightning-charge me-2 text-warning"></i>Plan: REST API
-                    <code>api/</code> con Caché</h6>
-                <span class="chip chip-warning ms-auto"><i class="bi bi-hourglass-split"></i> Pendiente</span>
+                <span class="entry-timestamp">2026-02-19 21:18</span>
+                <h6 class="entry-title"><i class="bi bi-server me-2 text-success"></i>REST API <code>api/</code> con LocMemCache — Implementación completa</h6>
+                <span class="chip chip-success ms-auto"><i class="bi bi-check-circle-fill"></i> Completado</span>
             </div>
             <div class="entry-body">
 
-                <div class="section-label">¿Por qué?</div>
+                <div class="section-label">¿Por qué se implementó?</div>
                 <p style="color:var(--text-muted); font-size:0.83rem; margin:0 0 16px;">
-                    El portal actualmente refresca el token OAuth en <strong>cada petición</strong>, lo que activa el
-                    rate-limit de Zoho
-                    (<em>"Too many requests"</em>). La solución es cachear las respuestas de SDP Cloud durante 1 hora
-                    y estructurar los endpoints como una API REST versionada reutilizable.
+                    El portal refrescaba el <code>access_token</code> de Zoho en <strong>cada request</strong>, agotando el rate-limit.
+                    La solución: una app <code>api/</code> separada que cachea las respuestas de SDP Cloud durante <strong>1 hora</strong>
+                    en memoria (LocMemCache), sin dependencias extra. Solo 1 llamada real a Zoho por hora.
                 </p>
 
-                <div class="section-label">Arquitectura propuesta</div>
-                <div class="code-block" style="font-size:0.8rem; line-height:1.7;">
-                    <span class="str">SDP Cloud API</span> → <span class="kw">Django api/ app</span> → <span
-                        class="cm"># cache.get/set (TTL 1h)</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
-                        class="str">portal/home/</span> ← fetch(<span class="str">'/api/v1/solutions/'</span>)
+                <div class="section-label">Arquitectura implementada</div>
+                <div class="code-block" style="font-size:0.8rem; line-height:1.8;">
+                    <span class="cm"># 1ª llamada — MISS → llama SDP Cloud → guarda en caché TTL 1h</span><br>
+                    Request → <span class="kw">api/views.py</span> → <span class="str">cache.get("sdp:solutions")</span> → <span class="kw">None</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;→ <span class="str">SDPAuth.get_access_token()</span> → Zoho → SDP → <span class="str">cache.set(..., 3600)</span><br><br>
+                    <span class="cm"># 2ª+ llamada — HIT → responde desde memoria, 0 llamadas a Zoho</span><br>
+                    Request → <span class="kw">api/views.py</span> → <span class="str">cache.get("sdp:solutions")</span> → <span class="kw">data ✅</span>
                 </div>
 
-                <div class="section-label mt-3">Estructura de archivos</div>
-                <div class="file-tree">
-                    <span class="file-dir">kb/api/</span><br>
-                    &nbsp;&nbsp;<span class="file-py">├── __init__.py</span><br>
-                    &nbsp;&nbsp;<span class="file-py">├── apps.py</span><br>
-                    &nbsp;&nbsp;<span class="file-py">├── cache.py</span> <span style="color:var(--text-muted);">←
-                        helpers get/set + flush</span><br>
-                    &nbsp;&nbsp;<span class="file-py">├── views.py</span> <span style="color:var(--text-muted);">←
-                        lógica REST + normalización</span><br>
-                    &nbsp;&nbsp;<span class="file-py">└── urls.py</span> <span style="color:var(--text-muted);">← rutas
-                        /api/v1/</span>
-                </div>
+                <div class="section-label mt-3">Archivos creados / modificados</div>
+                <table class="table-dark-custom">
+                    <thead><tr><th>Archivo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><code>api/cache.py</code></td>
+                            <td><span class="chip chip-primary" style="font-size:0.68rem; padding:1px 7px;">NUEVO</span></td>
+                            <td><code>get_cached_solutions()</code>, <code>get_cached_topics()</code>, <code>flush_cache()</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>api/views.py</code></td>
+                            <td><span class="chip chip-primary" style="font-size:0.68rem; padding:1px 7px;">NUEVO</span></td>
+                            <td>4 vistas REST: <code>solutions_list</code>, <code>solution_detail</code>, <code>topics_list</code>, <code>cache_flush</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>api/urls.py</code></td>
+                            <td><span class="chip chip-primary" style="font-size:0.68rem; padding:1px 7px;">NUEVO</span></td>
+                            <td>Router de la app — prefijo <code>/api/v1/</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>kb/settings.py</code></td>
+                            <td><span class="chip chip-warning" style="font-size:0.68rem; padding:1px 7px; background:rgba(255,193,7,0.15); color:#ffc107; border-radius:10px;">MODIF</span></td>
+                            <td>Agrega <code>'api'</code> a <code>INSTALLED_APPS</code> + bloque <code>CACHES</code> LocMemCache</td>
+                        </tr>
+                        <tr>
+                            <td><code>kb/urls.py</code></td>
+                            <td><span class="chip chip-warning" style="font-size:0.68rem; padding:1px 7px; background:rgba(255,193,7,0.15); color:#ffc107; border-radius:10px;">MODIF</span></td>
+                            <td>Agrega <code>path('api/v1/', include('api.urls'))</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>solutionsportal.html</code></td>
+                            <td><span class="chip chip-warning" style="font-size:0.68rem; padding:1px 7px; background:rgba(255,193,7,0.15); color:#ffc107; border-radius:10px;">MODIF</span></td>
+                            <td>fetch <code>/api/solutions/</code> → <code>/api/v1/solutions/</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>topics.html</code></td>
+                            <td><span class="chip chip-warning" style="font-size:0.68rem; padding:1px 7px; background:rgba(255,193,7,0.15); color:#ffc107; border-radius:10px;">MODIF</span></td>
+                            <td>fetch <code>/api/topics/</code> → <code>/api/v1/topics/</code></td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                <div class="section-label mt-3">Endpoints REST</div>
+                <hr class="entry-divider">
+
+                <div class="section-label">Tabla maestra — Todas las URLs y Endpoints del proyecto</div>
                 <table class="table-dark-custom">
                     <thead>
                         <tr>
                             <th>Método</th>
                             <th>URL</th>
+                            <th>App</th>
+                            <th>Tipo</th>
                             <th>Descripción</th>
+                            <th>Caché</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><code>GET</code></td>
-                            <td><code>/api/v1/solutions/</code></td>
-                            <td>Lista normalizada con caché. Soporta <code>?topic=</code></td>
+                            <td><a href="http://127.0.0.1:8000/home/" target="_blank" style="color:#6ea8fe;">/home/</a></td>
+                            <td><code>portal</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">HTML</span></td>
+                            <td>Portal público de soluciones — tabla + sidebar + detalle</td>
+                            <td>—</td>
                         </tr>
                         <tr>
                             <td><code>GET</code></td>
-                            <td><code>/api/v1/solutions/{id}/</code></td>
-                            <td>Detalle de una solución</td>
+                            <td><a href="http://127.0.0.1:8000/topics/" target="_blank" style="color:#6ea8fe;">/topics/</a></td>
+                            <td><code>portal</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">HTML</span></td>
+                            <td>Grid de tópicos con tarjeta, icono y conteo de soluciones</td>
+                            <td>—</td>
                         </tr>
                         <tr>
                             <td><code>GET</code></td>
-                            <td><code>/api/v1/topics/</code></td>
-                            <td>Tópicos únicos con conteo</td>
+                            <td><a href="http://127.0.0.1:8000/historico/" target="_blank" style="color:#6ea8fe;">/historico/</a></td>
+                            <td><code>portal</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">HTML</span></td>
+                            <td>Timeline de desarrollo del proyecto KB</td>
+                            <td>—</td>
                         </tr>
-                        <tr>
+                        <tr style="border-top: 2px solid rgba(255,255,255,0.08); background:rgba(255,193,7,0.03);">
+                            <td><code>GET</code></td>
+                            <td><a href="http://127.0.0.1:8000/api/solutions/" target="_blank" style="color:#6ea8fe;">/api/solutions/</a></td>
+                            <td><code>portal</code></td>
+                            <td><span style="color:#ffc107; font-size:0.75rem;">JSON</span></td>
+                            <td>Endpoint legado — activo, sin caché (deprecar)</td>
+                            <td><span style="color:#e74c3c;">✗</span></td>
+                        </tr>
+                        <tr style="background:rgba(255,193,7,0.03);">
+                            <td><code>GET</code></td>
+                            <td><a href="http://127.0.0.1:8000/api/topics/" target="_blank" style="color:#6ea8fe;">/api/topics/</a></td>
+                            <td><code>portal</code></td>
+                            <td><span style="color:#ffc107; font-size:0.75rem;">JSON</span></td>
+                            <td>Endpoint legado de tópicos — sin caché (deprecar)</td>
+                            <td><span style="color:#e74c3c;">✗</span></td>
+                        </tr>
+                        <tr style="border-top: 2px solid rgba(255,255,255,0.08); background:rgba(13,110,253,0.04);">
+                            <td><code>GET</code></td>
+                            <td><a href="http://127.0.0.1:8000/api/v1/solutions/" target="_blank" style="color:#6ea8fe;">/api/v1/solutions/</a></td>
+                            <td><code>api</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">JSON</span></td>
+                            <td>Lista normalizada. Filtros: <code>?topic=</code> <code>?status=</code></td>
+                            <td><span style="color:#2dce89;">✅ 1h</span></td>
+                        </tr>
+                        <tr style="background:rgba(13,110,253,0.04);">
+                            <td><code>GET</code></td>
+                            <td><span style="color:#8892ab;">/api/v1/solutions/&lt;id&gt;/</span></td>
+                            <td><code>api</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">JSON</span></td>
+                            <td>Detalle completo de una solución por ID nativo SDP</td>
+                            <td>—</td>
+                        </tr>
+                        <tr style="background:rgba(13,110,253,0.04);">
+                            <td><code>GET</code></td>
+                            <td><a href="http://127.0.0.1:8000/api/v1/topics/" target="_blank" style="color:#6ea8fe;">/api/v1/topics/</a></td>
+                            <td><code>api</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">JSON</span></td>
+                            <td>14 tópicos únicos con conteo · <code>{"count", "cached", "results"}</code></td>
+                            <td><span style="color:#2dce89;">✅ 1h</span></td>
+                        </tr>
+                        <tr style="background:rgba(13,110,253,0.04);">
                             <td><code>POST</code></td>
-                            <td><code>/api/v1/cache/flush/</code></td>
-                            <td>Invalida caché manualmente</td>
+                            <td><span style="color:#8892ab;">/api/v1/cache/flush/</span></td>
+                            <td><code>api</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">JSON</span></td>
+                            <td>Invalida <code>sdp:solutions</code> y <code>sdp:topics</code> del caché (csrf_exempt)</td>
+                            <td>—</td>
+                        </tr>
+                        <tr style="border-top: 2px solid rgba(255,255,255,0.08);">
+                            <td><code>*</code></td>
+                            <td><a href="http://127.0.0.1:8000/admin/" target="_blank" style="color:#6ea8fe;">/admin/</a></td>
+                            <td><code>django</code></td>
+                            <td><span style="color:#2dce89; font-size:0.75rem;">HTML</span></td>
+                            <td>Django Admin Panel</td>
+                            <td>—</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <div class="section-label mt-3">Response Format</div>
+                <div class="section-label mt-3">Resultados verificados</div>
                 <div class="code-block" style="font-size:0.79rem;">
-                    {<br>
-                    &nbsp;&nbsp;<span class="str">"count"</span>: 21,<br>
-                    &nbsp;&nbsp;<span class="str">"cached"</span>: <span class="kw">true</span>, &nbsp;<span
-                        class="cm">← indica si viene de caché</span><br>
-                    &nbsp;&nbsp;<span class="str">"results"</span>: [ { <span class="str">"display_id"</span>: <span
-                        class="str">"SOL-21"</span>, <span class="str">"title"</span>: <span class="str">"..."</span>,
-                    ... } ]<br>
-                    }
+                    curl /api/v1/solutions/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="str">{ "count": 21, "cached": false }</span><br>
+                    curl /api/v1/solutions/?topic=Internet → <span class="str">{ "count": 5, "cached": true }</span><br>
+                    curl /api/v1/topics/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="str">{ "count": 14, "cached": true }</span><br>
+                    curl -X POST /api/v1/cache/flush/ &nbsp;&nbsp;→ <span class="str">{ "flushed": ["sdp:solutions", "sdp:topics"] }</span><br>
+                    curl /api/v1/solutions/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ <span class="str">{ "cached": false }</span> <span style="color:#2dce89;">✅</span>
                 </div>
 
-                <div class="section-label mt-3">Caché — <code>django.core.cache.backends.locmem</code></div>
-                <div class="code-block" style="font-size:0.79rem;">
-                    <span class="cm"># settings.py — sin dependencias extra</span><br>
-                    CACHES = { <span class="str">"default"</span>: { <span class="str">"BACKEND"</span>: <span
-                        class="str">"django.core.cache.backends.locmem.LocMemCache"</span> } }
+                <div class="section-label mt-3">Commit</div>
+                <div class="code-block">
+                    git commit <span class="str">"feat: api/ app with LocMemCache"</span> → rama <span class="kw">20260219</span> · 13 archivos · +178 líneas
                 </div>
-
-                <div class="section-label mt-3">Workflow documentado</div>
-                <div class="code-block" style="color:#6ea8fe;">📄 .agent/workflows/api_rest_cache.md</div>
             </div>
         </div>
 
